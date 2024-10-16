@@ -1,0 +1,228 @@
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\paulo\Desktop\AC\TP1.lst	Mon Jun 24 10:21:33 2024
+
+Sections
+Index   Name            Address   Size
+0       .startup        0000      0012 18
+1       .text           0012      0078 120
+2       .data           008A      001A 26
+3       .stack          00A4      0040 64
+
+Symbols
+Name                    Type      Value       Section
+_start                  LABEL     0004 4      .startup
+AMBAR_SCALE             ABSOLUTE  0001 1      .startup
+check_warning_time      LABEL     003E 62     .text
+color_histogram         LABEL     008A 138    .data
+color_histogram_addr    LABEL     0086 134    .text
+color_scale             LABEL     0034 52     .text
+CRITICAL_TIME           ABSOLUTE  0096 150    .startup
+critical_time_addr      LABEL     0084 132    .text
+end_while               LABEL     0028 40     .text
+GREEN_SCALE             ABSOLUTE  0000 0      .startup
+line#15                 LABEL     000C 12     .startup
+line#9                  LABEL     0002 2      .startup
+main                    LABEL     0012 18     .text
+main_addr               LABEL     0010 16     .startup
+RED_SCALE               ABSOLUTE  0002 2      .startup
+scale_for_ambar         LABEL     0044 68     .text
+scale_for_end           LABEL     0050 80     .text
+scale_for_red           LABEL     004A 74     .text
+SCALES                  ABSOLUTE  0003 3      .startup
+STACK_SIZE              ABSOLUTE  00CA 202    .data
+stack_top               LABEL     00E4 228    .stack
+stack_top_addr          LABEL     000E 14     .startup
+test_color_scale        LABEL     0052 82     .text
+test_color_scale_for_body LABEL     0066 102    .text
+test_color_scale_for_ctrl LABEL     0072 114    .text
+test_color_scale_for_end LABEL     0078 120    .text
+test_color_scale_for_update LABEL     0070 112    .text
+times                   LABEL     0090 144    .data
+times_addr              LABEL     0088 136    .text
+WARNING_TIME            ABSOLUTE  012C 300    .startup
+warning_time_addr       LABEL     0082 130    .text
+while                   LABEL     001A 26     .text
+
+Code listing
+   1           	/* Secção de arranque: código de inicialização
+   2           	 * 1. Estabelece vetores (entry point após reset e de interrupção)
+   3           	 * 2. Inicia stack pointer
+   4           	 * 3. Chama main
+   5           	 * 4. Retém a execução do CPU após o retorno do main
+   6           	*/
+   7           		.section .startup
+   8 0000 01 58		b		_start
+   9 0002 FF 5B		b 		.
+  10           	_start:
+  11 0004 4D 0C		ldr		sp, stack_top_addr
+  12 0006 80 B7		mov		r0, pc
+  13 0008 0E A2		add		lr, r0, #4
+  14 000A 2F 0C		ldr		pc, main_addr
+  15 000C FF 5B		b 		.	
+  16           	stack_top_addr:
+  17 000E E4 00		.word stack_top
+  18           	main_addr:
+  19 0010 12 00		.word	main
+  20           		
+  21           	/* Constantes */
+  22          	    .equ RED_SCALE, 2
+  23          	    .equ AMBAR_SCALE, 1
+  24          	    .equ GREEN_SCALE, 0
+  25          		.equ SCALES, 3
+  26          	    .equ WARNING_TIME, 300
+  27          	    .equ CRITICAL_TIME, 150
+  28           	
+  29           	/* Secção com código aplicacional (programa) */
+  30           		.text
+  31           	
+  32           	/*
+  33           	int16_t main ( void ) {
+  34           	    uint16_t i = 0;
+  35           	
+  36           	    while ( i < 3 ) {
+  37           	        color_histogram [ i ++] = 0;
+  38           	    }
+  39           	    test_color_scale ( times , color_histogram , 10 ) ;
+  40           	    return 0;
+  41           	}
+  42           	*/
+  43           	main:
+  44           		; salva LR se função não folha
+  45 0012 0E 24		push	lr
+  46           	
+  47 0014 00 60		mov r0, #0 ; i = 0
+  48 0016 01 60		mov r1, #0 ; color_histogram [ i ++] = 0
+  49 0018 32 60		mov r2, #3 ; i < 3
+  50           	
+  51           	while:
+  52 001A 00 B9		cmp r0, r2 ; i < 3
+  53 001C 05 50		bge end_while
+  54 001E 83 E0		lsl r3, r0, #1 ; r3 = i * 2
+  55 0020 24 0F		ldr r4, color_histogram_addr ; load address of color_histogram into r4
+  56 0022 C1 31		str r1, [r4, r3] ; color_histogram [ i ++] = 0
+  57 0024 80 A0		add r0, r0, #1 ; i++
+  58 0026 F9 5B		b while
+  59           	
+  60           	end_while:
+  61 0028 F0 0E		ldr r0, times_addr ; load address of times into r0
+  62 002A D1 0E		ldr r1, color_histogram_addr ; load address of color_histogram into r1
+  63 002C A2 60		mov r2, #10 ; 10
+  64 002E 11 5C		bl test_color_scale ; test_color_scale ( times , color_histogram , 10 ) ;
+  65           	
+  66 0030 00 60		mov r0, #0 ; return 0
+  67           	
+  68           		; retorna desempilhando endereço de retorno se função não folha
+  69 0032 0F 04		pop		pc
+  70           	
+  71           	/*
+  72           	uint8_t color_scale ( uint16_t t ) {
+  73           	    uint8_t c = GREEN_SCALE ;
+  74           	
+  75           	    if ( t >= CRITICAL_TIME && t <= WARNING_TIME ) {
+  76           	        c = AMBAR_SCALE ;
+  77           	    } else if ( t < CRITICAL_TIME ) {
+  78           	    c = RED_SCALE ;
+  79           	    }
+  80           	    return c ;
+  81           	}
+  82           	*/
+  83           	color_scale:
+  84 0034 01 60		mov r1, #GREEN_SCALE ; c = GREEN_SCALE
+  85 0036 62 0E		ldr r2, critical_time_addr ; load address of CRITICAL_TIME into r2
+  86 0038 00 B9		cmp r0, r2 ; t >= CRITICAL_TIME
+  87 003A 01 48		bhs check_warning_time ; t >= CRITICAL_TIME
+  88 003C 06 4C		blo scale_for_red ; t < CRITICAL_TIME
+  89           	check_warning_time:
+  90 003E 12 0E		ldr r2, warning_time_addr ; load address of WARNING_TIME into r2
+  91 0040 20 B8		cmp r2, r0 ; t <= WARNING_TIME
+  92 0042 06 4C		blo scale_for_end
+  93           	scale_for_ambar:
+  94 0044 12 60		mov r2, #AMBAR_SCALE ; c = AMBAR_SCALE
+  95 0046 01 B1		mov r1, r2 ; c = AMBAR_SCALE
+  96 0048 03 58		b scale_for_end
+  97           	scale_for_red:
+  98 004A 22 60		mov r2, #RED_SCALE ; c = RED_SCALE
+  99 004C 01 B1		mov r1, r2 ; c = RED_SCALE
+ 100 004E 00 58		b scale_for_end
+ 101           	
+ 102           	scale_for_end:
+ 103 0050 0F B7		mov pc, lr
+ 104           	
+ 105           	/*
+ 106           	void test_color_scale ( uint16_t array_t [] , uint8_t array_c [] ,int16_t array_t_size ) {
+ 107           	    int16_t i ;
+ 108           	
+ 109           	    for ( i = 0; i < array_t_size ; i ++ ) {
+ 110           	        array_c [color_scale (array_t [i])]++;
+ 111           	    }
+ 112           	}
+ 113           	*/
+ 114           	
+ 115           	test_color_scale:
+ 116 0052 0E 24		push lr
+ 117           		
+ 118 0054 04 24		push r4 ; array_t
+ 119 0056 05 24		push r5 ; array_c
+ 120 0058 06 24		push r6 ; array_t_size
+ 121 005A 07 24		push r7 ; i
+ 122           	
+ 123 005C 07 60		mov r7, #0 ; i = 0
+ 124 005E 04 B0		mov r4, r0 ; array_t
+ 125 0060 85 B0		mov r5, r1 ; array_c
+ 126 0062 06 B1		mov r6, r2 ; array_t_size
+ 127           	
+ 128 0064 06 58		b test_color_scale_for_ctrl
+ 129           	test_color_scale_for_body:
+ 130 0066 C0 13		ldr r0, [r4, r7] ; array_t [i]
+ 131 0068 E5 5F		bl color_scale ; color_scale (array_t [i])
+ 132 006A D2 18		ldrb r2, [r5, r1] ; array_c [color_scale (array_t [i])]
+ 133 006C A2 A0		add r2, r2, #1 ; array_c [color_scale (array_t [i])]++
+ 134 006E D2 38		strb r2, [r5, r1] ; array_c [color_scale (array_t [i])]
+ 135           	test_color_scale_for_update:
+ 136 0070 F7 A0		add r7, r7, #1 ; i++
+ 137           	test_color_scale_for_ctrl:
+ 138 0072 70 BB		cmp r7, r6 ; i < array_t_size
+ 139 0074 01 50		bge test_color_scale_for_end
+ 140 0076 F7 5B		b test_color_scale_for_body
+ 141           	test_color_scale_for_end:
+ 142 0078 07 04		pop r7 ; i
+ 143 007A 06 04		pop r6 ; array_t_size
+ 144 007C 05 04		pop r5 ; array_c
+ 145 007E 04 04		pop r4 ; array_t
+ 146           	
+ 147 0080 0F 04		pop pc
+ 148           	
+ 149           	warning_time_addr:
+ 150 0082 2C 01		.word WARNING_TIME
+ 151           	critical_time_addr:
+ 152 0084 96 00		.word CRITICAL_TIME
+ 153           	color_histogram_addr:
+ 154 0086 8A 00		.word color_histogram
+ 155           	times_addr:
+ 156 0088 90 00		.word times
+ 157           	
+ 158           	/* Dados globais do programa iniciados */ 
+ 159           		.data
+ 160           	
+ 161           	/*
+ 162           	uint8_t color_histogram [3];
+ 163           	uint16_t times [] = { 65535 , 500 , 301 , 300 , 299 , 151 , 150 , 149 , 1 , 0 };
+ 164           	*/
+ 165           	color_histogram:
+ 166 008A 00   		.space SCALES * 2 ; criada variavel 'SCALES' para designar as 3 escalas:
+ 166 .... ..
+ 166 008F 00
+ 167           		; RED, AMBAR e GREEN
+ 168           	times:
+ 169          		.word 65535 , 500 , 301 , 300 , 299 , 151 , 150 , 149 , 1 , 0 
+ 169 0090 FF FF F4 01 2D 01 2C 01 2B 01 97 00 96 00 95 00
+ 169 00A0 01 00 00 00
+ 170           	
+ 171           	/* Stack: pilha com dados temporários */
+ 172           	
+ 173          		.equ STACK_SIZE, 64
+ 174           		.section .stack
+ 175 00A4 00   		.space STACK_SIZE
+ 175 .... ..
+ 175 00E3 00
+ 176           	stack_top:
+ 176           	

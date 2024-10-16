@@ -1,0 +1,143 @@
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\paulo\Desktop\AC\en2223.lst	Tue Jun 25 19:05:12 2024
+
+Sections
+Index   Name            Address   Size
+0       .startup        0000      0012 18
+1       .text           0012      0056 86
+2       .data           0068      0010 16
+3       .stack          0078      0040 64
+
+Symbols
+Name                    Type      Value       Section
+_start                  LABEL     0004 4      .startup
+array                   LABEL     006A 106    .data
+array_addr              LABEL     0066 102    .text
+ARRAY_SIZE              ABSOLUTE  0007 7      .startup
+compare                 LABEL     0048 72     .text
+compare_end             LABEL     005E 94     .text
+count_bigger            LABEL     0012 18     .text
+count_end               LABEL     0042 66     .text
+count_loop              LABEL     0022 34     .text
+count_loop_end          LABEL     003E 62     .text
+counter                 LABEL     0068 104    .data
+counter_addr            LABEL     0062 98     .text
+line#3                  LABEL     0002 2      .startup
+line#9                  LABEL     000C 12     .startup
+main                    LABEL     0012 18     .text
+main_addr               LABEL     0010 16     .startup
+MARK                    ABSOLUTE  0285 645    .startup
+MARK_addr               LABEL     0064 100    .text
+STACK_SIZE              ABSOLUTE  00A8 168    .data
+stack_top               LABEL     00B8 184    .stack
+stack_top_addr          LABEL     000E 14     .startup
+
+Code listing
+   1           		.section .startup
+   2 0000 01 58		b		_start
+   3 0002 FF 5B		b 		.
+   4           	_start:
+   5 0004 4D 0C		ldr		sp, stack_top_addr
+   6 0006 80 B7		mov		r0, pc
+   7 0008 0E A2		add		lr, r0, #4
+   8 000A 2F 0C		ldr		pc, main_addr
+   9 000C FF 5B		b 		.	
+  10           	stack_top_addr:
+  11 000E B8 00		.word stack_top
+  12           	main_addr:
+  13 0010 12 00		.word	main
+  14           	
+  15           	;Simbolos
+  16          	    .equ ARRAY_SIZE, 7
+  17          	    .equ MARK, 645
+  18           	
+  19           	    .text
+  20           	
+  21           	main:
+  22           	
+  23           	count_bigger: ; r0 = reference
+  24 0012 0E 24	    push lr
+  25           	
+  26 0014 04 24	    push r4
+  27 0016 05 24	    push r5
+  28           	
+  29 0018 04 B0	    mov r4, r0 ;reference
+  30 001A 05 60	    mov r5, #0 ;index
+  31           	
+  32 001C 20 0E	    ldr r0, counter_addr
+  33 001E 01 60	    mov r1, #0
+  34 0020 01 28	    strb r1, [r0] ;counter = 0
+  35           	
+  36           	count_loop: 
+  37 0022 70 60	    mov r0, #ARRAY_SIZE
+  38 0024 50 B8	    cmp r5, r0 ;index < ARRAY_SIZE
+  39 0026 0D 48	    bhs count_end
+  40           	
+  41 0028 00 B2	    mov r0, r4 ;reference
+  42 002A D1 0D	    ldr r1, array_addr
+  43 002C 91 12	    ldr r1, [r1, r5] ;array[index]
+  44           	    
+  45 002E 0C 5C	    bl  compare
+  46           	
+  47 0030 01 60	    mov r1, #0
+  48 0032 10 B8	    cmp r1, r0 ;0 < tmp
+  49 0034 04 50	    bge count_loop_end
+  50 0036 50 0D	    ldr r0, counter_addr
+  51 0038 01 08	    ldrb r1, [r0]
+  52 003A 91 A0	    add r1, r1, #1
+  53 003C 01 28	    strb r1, [r0] ;counter++
+  54           	count_loop_end:
+  55 003E D5 A0	    add r5, r5, #1
+  56 0040 F0 5B	    b count_loop
+  57           	count_end:
+  58 0042 05 04	    pop r5
+  59 0044 04 04	    pop r4
+  60           	
+  61 0046 0F 04	    pop pc  
+  62           	
+  63           	compare: ; r0 = reference, r1 = value
+  64 0048 02 60	    mov r2, #0 ;result = 0
+  65           	
+  66 004A 80 B8	    cmp r0, r1 ;reference < value
+  67 004C 08 48	    bhs compare_end
+  68           	    
+  69 004E 52 68	    mov r2, #MARK & 0xFF
+  70 0050 22 70	    movt r2, #(MARK >> 8) & 0xFF
+  71 0052 12 B1	    mvn r2, r2 ;result = -MARK
+  72 0054 04 58	    b compare_end
+  73           	    
+  74 0056 10 B8	    cmp r1, r0 ;value > reference
+  75 0058 02 4C	    blo compare_end
+  76 005A 52 68	    mov r2, #MARK & 0xFF
+  77 005C 22 70	    movt r2, #(MARK >> 8) & 0xFF
+  78           	
+  79           	compare_end:
+  80 005E 00 B1	    mov r0, r2
+  81 0060 0F B7	    mov pc, lr
+  82           	
+  83           	
+  84           	counter_addr:
+  85 0062 68 00	    .word counter
+  86           	
+  87           	MARK_addr:
+  88 0064 85 02	    .word MARK
+  89           	
+  90           	array_addr:
+  91 0066 6A 00	    .word array
+  92           	
+  93           	    .data 
+  94           	
+  95           	counter:
+  96 0068 00   	    .space 1
+  97           	
+  98 0069 00  	    .align
+  99           	array:
+ 100          	    .word 125, 10, 205, 34, 220, 150, 170
+ 100 006A 7D 00 0A 00 CD 00 22 00 DC 00 96 00 AA 00
+ 101           	
+ 102          		.equ STACK_SIZE, 64
+ 103           		.section .stack
+ 104 0078 00   		.space STACK_SIZE
+ 104 .... ..
+ 104 00B7 00
+ 105           	stack_top:
+ 105           	

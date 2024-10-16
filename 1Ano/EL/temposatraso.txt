@@ -1,0 +1,16 @@
+280ns A gerador
+210ns B gerador
+
+condensador
+
+440us A gerador
+500us B gerador
+
+
+𝑉𝐼𝐿	2.04v
+𝑉𝐼𝐻	2.9v
+𝑉𝑂𝐿 0v
+𝑉𝑂𝐻 5v
+𝑉𝑆𝑃 2.48v
+𝑁𝑀𝐿 2.04
+𝑁𝑀𝐻 2.1V

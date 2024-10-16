@@ -1,0 +1,32 @@
+Circuit: * C:\Users\paulo\Desktop\EL\NOR_NEW3-delay7.asc
+
+Instance "m:c2_mp1:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c2_mn1:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c2_mn2:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c1_mn3:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c2_mp2:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c1_mp3:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c1_mp2:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c1_mn2:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c1_mp1:1": Length shorter than recommended for a level 1 MOSFET.
+Instance "m:c1_mn1:1": Length shorter than recommended for a level 1 MOSFET.
+Direct Newton iteration for .op point succeeded.
+
+Date: Fri Dec 22 15:19:43 2023
+Total elapsed time: 0.219 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 3222
+traniter = 3212
+tranpoints = 1444
+accept = 1392
+rejected = 52
+matrix size = 12
+fillins = 0
+solver = Normal
+Avg thread counts: 1.9/2.9/2.9/1.9
+Matrix Compiler1: 786 bytes object code size  0.7/0.7/[0.2]
+Matrix Compiler2: 1.18 KB object code size  1.6/0.6/[0.3]
+

@@ -1,0 +1,17 @@
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\paulo\Desktop\AC\eni2223.lst	Thu Jun 27 15:22:18 2024
+
+Sections
+Index   Name            Address   Size
+0       .text           0000      0000 0
+
+Symbols
+Name                    Type      Value       Section
+INPORT_ADDRESS          ABSOLUTE  6001 24577  .text
+OUTPORT_ADDRESS         ABSOLUTE  4000 16384  .text
+stack_size              ABSOLUTE  0020 32     .text
+
+Code listing
+   1          	.equ stack_size, 32
+   2           	
+   3          	.equ INPORT_ADDRESS, 0x6001
+   4          	.equ OUTPORT_ADDRESS, 0x4000

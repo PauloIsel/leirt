@@ -1,0 +1,15 @@
+    base.o
+U solid
+T base
+
+    volume.o
+t area
+T volume
+U base
+U solid
+
+    main.o
+U scanf
+U print
+U solid
+U volume

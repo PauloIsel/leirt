@@ -1,0 +1,188 @@
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\paulo\Desktop\AC\ee2223.lst	Thu Jun 27 09:00:48 2024
+
+Sections
+Index   Name            Address   Size
+0       .startup        0000      0012 18
+1       .text           0012      0082 130
+2       .data           0094      0012 18
+3       .stack          00A6      0040 64
+
+Symbols
+Name                    Type      Value       Section
+_start                  LABEL     0004 4      .startup
+count_vowels            LABEL     0020 32     .text
+is_vowel                LABEL     0056 86     .text
+is_vowel_end            LABEL     008E 142    .text
+line#3                  LABEL     0002 2      .startup
+line#9                  LABEL     000C 12     .startup
+main                    LABEL     0012 18     .text
+main_addr               LABEL     0010 16     .startup
+MAX_LEN                 ABSOLUTE  01F4 500    .startup
+MAX_LEN_addr            LABEL     0092 146    .text
+set1                    LABEL     007A 122    .text
+set2                    LABEL     007E 126    .text
+set3                    LABEL     0082 130    .text
+set4                    LABEL     0086 134    .text
+set5                    LABEL     008A 138    .text
+STACK_SIZE              ABSOLUTE  00D4 212    .data
+stack_top               LABEL     00E6 230    .stack
+stack_top_addr          LABEL     000E 14     .startup
+strg                    LABEL     0094 148    .data
+strg_addr               LABEL     001C 28     .text
+tmp                     LABEL     00A4 164    .data
+tmp_addr                LABEL     0054 84     .text
+vowels                  LABEL     00A2 162    .data
+vowels_addr             LABEL     001E 30     .text
+vowels_end              LABEL     0050 80     .text
+vowels_if               LABEL     0034 52     .text
+vowels_inc              LABEL     004C 76     .text
+vowels_loop             LABEL     0036 54     .text
+
+Code listing
+   1           		.section .startup
+   2 0000 01 58		b		_start
+   3 0002 FF 5B		b 		.
+   4           	_start:
+   5 0004 4D 0C		ldr		sp, stack_top_addr
+   6 0006 80 B7		mov		r0, pc
+   7 0008 0E A2		add		lr, r0, #4
+   8 000A 2F 0C		ldr		pc, main_addr
+   9 000C FF 5B		b 		.	
+  10           	stack_top_addr:
+  11 000E E6 00		.word stack_top
+  12           	main_addr:
+  13 0010 12 00		.word	main
+  14           	    
+  15           	;Simbolos
+  16          	    .equ MAX_LEN, 500
+  17           	
+  18           	    .text
+  19           	
+  20           	main:
+  21 0012 0E 24	    push lr 
+  22           	
+  23 0014 E0 60	    mov r0, #14
+  24 0016 21 0C	    ldr r1, strg_addr
+  25 0018 03 5C	    bl count_vowels
+  26           	
+  27 001A 0F 04	    pop pc
+  28           	
+  29           	strg_addr:
+  30 001C 94 00	    .word strg
+  31           	vowels_addr:
+  32 001E A2 00	    .word vowels
+  33           	
+  34           	count_vowels: ; r0 = len, r1 = str
+  35 0020 0E 24	    push lr
+  36 0022 07 60	    mov r7, #0 ;i = 0
+  37 0024 04 B0	    mov r4, r0 ;len
+  38 0026 85 B0	    mov r5, r1 ;str
+  39           	
+  40 0028 20 69	    mov r0, #MAX_LEN_addr
+  41 002A 00 00	    ldr r0, [r0]
+  42 002C 00 BA	    cmp r0, r4 ;MAX_LEN < len
+  43 002E 02 4C	    blo vowels_if
+  44 0030 06 60	    mov r6, #0 ;vowels = 0
+  45 0032 01 58	    b vowels_loop
+  46           	
+  47           	vowels_if:
+  48 0034 04 B0	    mov r4, r0 ;len = MAX_LEN
+  49           	
+  50           	vowels_loop:
+  51 0036 70 BA	    cmp r7, r4 ;i < len
+  52 0038 0B 48	    bhs vowels_end
+  53 003A D0 1B	    ldrb r0, [r5, r7] ;r3 = str[i]
+  54 003C 01 60	    mov r1, #0
+  55 003E 80 B8	    cmp r0, r1 ;str[i] != 0
+  56 0040 07 40	    beq vowels_end
+  57           	
+  58 0042 09 5C	    bl is_vowel
+  59 0044 01 60	    mov r1, #0
+  60 0046 10 B8	    cmp r1, r0 ;0 < tmp
+  61 0048 01 50	    bge vowels_inc
+  62 004A E6 A0	    add r6, r6, #1
+  63           	vowels_inc: 
+  64 004C F7 A0	    add r7, r7, #1
+  65 004E F3 5B	    b vowels_loop
+  66           	
+  67           	vowels_end:
+  68 0050 80 B3	    mov r0, r7
+  69 0052 0F 04	    pop pc
+  70           	
+  71           	tmp_addr:
+  72 0054 A4 00	    .word tmp
+  73           	
+  74           	is_vowel:
+  75           	; r3 = -1
+  76 0056 01 60	    mov r1, #0
+  77 0058 91 B0	    mvn r1, r1
+  78           	
+  79 005A 12 66	    mov r2, #97
+  80 005C 00 B9	    cmp r0, r2
+  81 005E 0D 40	    beq set1
+  82           	
+  83 0060 52 66	    mov r2, #101
+  84 0062 00 B9	    cmp r0, r2
+  85 0064 0C 40	    beq set2
+  86           	
+  87 0066 92 66	    mov r2, #105
+  88 0068 00 B9	    cmp r0, r2
+  89 006A 0B 40	    beq set3
+  90           	
+  91 006C F2 66	    mov r2, #111
+  92 006E 00 B9	    cmp r0, r2
+  93 0070 0A 40	    beq set4
+  94           	
+  95 0072 52 67	    mov r2, #117
+  96 0074 00 B9	    cmp r0, r2
+  97 0076 09 40	    beq set5
+  98           	
+  99 0078 0A 58	    b is_vowel_end
+ 100           	set1:
+ 101 007A 11 60	    mov r1, #1
+ 102 007C 08 58	    b is_vowel_end
+ 103           	set2:
+ 104 007E 21 60	    mov r1, #2
+ 105 0080 06 58	    b is_vowel_end
+ 106           	set3:
+ 107 0082 31 60	    mov r1, #3
+ 108 0084 04 58	    b is_vowel_end
+ 109           	set4:
+ 110 0086 41 60	    mov r1, #4
+ 111 0088 02 58	    b is_vowel_end
+ 112           	set5:
+ 113 008A 51 60	    mov r1, #5
+ 114 008C 00 58	    b is_vowel_end
+ 115           	is_vowel_end:
+ 116 008E 80 B0	    mov r0, r1
+ 117 0090 0F B7	    mov pc, lr
+ 118           	
+ 119           	
+ 120           	
+ 121           	MAX_LEN_addr:
+ 122 0092 F4 01	    .word MAX_LEN
+ 123           	
+ 124           	;Variaveis globais
+ 125           	    .data
+ 126           	
+ 127           	strg:
+ 128          	    .asciz "Hello World!"
+ 128 0094 48 65 6C 6C 6F 20 57 6F 72 6C 64 21 00
+ 129 00A1 00  	    .align
+ 130           	
+ 131           	vowels: 
+ 132 00A2 00   	    .space 2
+ 132 00A3 00
+ 133           	
+ 134           	tmp:
+ 135 00A4 00   	    .space 1
+ 136           	
+ 137 00A5 00  	    .align
+ 138           	
+ 139          		.equ STACK_SIZE, 64
+ 140           		.section .stack
+ 141 00A6 00   		.space STACK_SIZE
+ 141 .... ..
+ 141 00E5 00
+ 142           	stack_top:
+ 142           	
