@@ -39,4 +39,5 @@ public class FolderPage extends Page implements Iterable<Page> {
     public Iterator<Page> iterator() {
         return this.pages.iterator();
     }
+
 }
