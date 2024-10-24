@@ -36,13 +36,19 @@ public class TLong extends Transaction implements Composition{
         StringBuilder s = new StringBuilder(super.getDescription(prefix));
         for (Transaction t : Transactions) {
             s.append("\n").append(t.getDescription("  " + prefix));
-//            s.append("\n").append("aaa");
         }
         return s.toString();
     }
 
+
     public String compensationToString() {
-        return null;
+        if(Transactions.isEmpty()) return "";
+
+        StringBuilder s = new StringBuilder();
+        for(Transaction t: Transactions){
+            s.append("; ").append(t.compensationToString());
+        }
+        return s.substring(2);
     }
 
 
